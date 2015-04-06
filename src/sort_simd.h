@@ -6,6 +6,8 @@
 #include <mmintrin.h>
 #include <stdint.h>
 
+#define _MM_REVERSE_PS(reg) _mm_shuffle_ps(reg, reg, _MM_SHUFFLE(3,1,2,0))
+
 /**
  * Ordena un registro __m128 de menor a mayor con una red simple de 
  * ordenamiento.
@@ -23,18 +25,18 @@ __m128 sort_m128(__m128 reg) __attribute__((const));
  *
  * @return El registro a invertir
  */
-inline __m128 reverse_m128(__m128 reg) __attribute__((const));
+//inline __m128 reverse_m128(__m128 reg) __attribute__((const));
 
 /**
- * Hace un mergesort entre de los registros 'a' y 'b' y los coloca en dest.  
- * 'dest' tiene que ser un arreglo de largo 2 de tipo «__m128».
+ * Red de Batcher. Hace un mergesort entre de los registros 'a' y 'b' y los 
+ * coloca en dest. 'dest' tiene que ser un arreglo de largo 2 de tipo «__m128».
  *
  * @param dest	Arreglo donde se colocan las 2 secuencias ordenadas de menor a 
  * mayor
  * @param a		Primer registro __m128
  * @param b		Segundo registro __m128
  */
-void bitonic_merge_network(__m128 *dest, __m128 a, __m128 b) __attribute__((nonnull(1)));
+void bitonic_merge_network(__m128 *a, __m128 *b);
 
 /**
  * Segunda etapa de la red de ordenamiento bitonica. Esta etapa de la red se 

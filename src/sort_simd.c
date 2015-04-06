@@ -41,44 +41,42 @@ __m128 sort_m128(__m128 reg)
 	return aux;
 }
 
-inline __m128 reverse_m128(__m128 reg)
+void bitonic_merge_network(__m128 *a, __m128 *b)
 {
-	return _mm_shuffle_ps(reg, reg, _MM_SHUFFLE(0,1,2,3));
-}
+	__m128 reg_a, reg_b, min, max;
 
-void bitonic_merge_network(__m128 *dest, __m128 a, __m128 b)
-{
-	__m128 min, max;
+	reg_a = *a;
+	reg_b = *b;
 
-	min = _mm_min_ps(a,b);
-	max = _mm_max_ps(a,b);
+	min = _mm_min_ps(reg_a,reg_b);
+	max = _mm_max_ps(reg_a,reg_b);
 
-	a = _mm_shuffle_ps(min, max, _MM_SHUFFLE(2,0,2,0));
-	b = _mm_shuffle_ps(min, max, _MM_SHUFFLE(3,1,3,1));
+	reg_a = _mm_shuffle_ps(min, max, _MM_SHUFFLE(2,0,2,0));
+	reg_b = _mm_shuffle_ps(min, max, _MM_SHUFFLE(3,1,3,1));
 
-	a = _mm_shuffle_ps(a, a, _MM_SHUFFLE(3,1,2,0));
-	b = _mm_shuffle_ps(b, b, _MM_SHUFFLE(3,1,2,0));
+	reg_a = _mm_shuffle_ps(reg_a, reg_a, _MM_SHUFFLE(3,1,2,0));
+	reg_b = _mm_shuffle_ps(reg_b, reg_b, _MM_SHUFFLE(3,1,2,0));
 
 	// etapa 2 
 
-	a = bmn_2ndstage(a);
-	b = bmn_2ndstage(b); 
+	reg_a = bmn_2ndstage(reg_a);
+	reg_b = bmn_2ndstage(reg_b); 
 
 	// etapa 3 
 	
-	min = _mm_min_ps(a,b);
-	max = _mm_max_ps(a,b);
+	min = _mm_min_ps(reg_a,reg_b);
+	max = _mm_max_ps(reg_a,reg_b);
 
-	a = _mm_shuffle_ps(min, max, _MM_SHUFFLE(1,0,1,0));
-	b = _mm_shuffle_ps(min, max, _MM_SHUFFLE(3,2,3,2));
+	reg_a = _mm_shuffle_ps(min, max, _MM_SHUFFLE(1,0,1,0));
+	reg_b = _mm_shuffle_ps(min, max, _MM_SHUFFLE(3,2,3,2));
 
-	a = _mm_shuffle_ps(a, a, _MM_SHUFFLE(3,1,2,0));
-	b = _mm_shuffle_ps(b, b, _MM_SHUFFLE(3,1,2,0));
+	reg_a = _mm_shuffle_ps(reg_a, reg_a, _MM_SHUFFLE(3,1,2,0));
+	reg_b = _mm_shuffle_ps(reg_b, reg_b, _MM_SHUFFLE(3,1,2,0));
 
 	// se cargan registros al destino
 
-	dest[0] = a;
-	dest[1] = b;
+	*a = reg_a;
+	*b = reg_b;
 }
 
 static __m128 bmn_2ndstage(__m128 reg)
