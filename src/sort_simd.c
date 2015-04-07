@@ -4,6 +4,16 @@
 #include <mmintrin.h>
 #include <stdint.h>
 
+/**
+ * Segunda etapa de la red de ordenamiento bitonica. Esta etapa de la red se 
+ * puede hacer aparte, pues los registros resultantes dependen unicamente del 
+ * mismo registro de entrada, a diferencia de las etapas restantes que dependen 
+ * de los resultados del segundo registro.
+ *
+ * @param reg	Registro __m128
+ * @return El registro resultante de la segunda etapa de la BMN
+ */
+static __m128 bmn_2ndstage(__m128 reg);
 
 __m128 sort_m128(__m128 reg)
 {
@@ -92,4 +102,53 @@ static __m128 bmn_2ndstage(__m128 reg)
 	reg = _mm_shuffle_ps(reg, reg, _MM_SHUFFLE(3,1,2,0));
 
 	return reg;
+}
+
+void in_register_sort(__m128 *a, __m128 *b, __m128 *c, __m128 *d)
+{
+	__m128 ra, rb, rc, rd, min, max, min2, max2;
+
+	ra = *a;
+	rb = *b;
+	rc = *c;
+	rd = *d;
+
+	min = _mm_min_ps(ra, rc);
+	max = _mm_max_ps(ra, rc);
+
+	min2 = _mm_min_ps(rb, rd);
+	max2 = _mm_max_ps(rb, rd);
+
+	ra = min;
+	rb = min2;
+	rc = max;
+	rd = max2;
+
+	// etapa 2
+
+	min = _mm_min_ps(ra, rb);
+	max = _mm_max_ps(ra, rb);
+
+	min2 = _mm_min_ps(rc, rd);
+	max2 = _mm_max_ps(rc, rd);
+
+	ra = min;
+	rb = max;
+	rc = min2;
+	rd = max2;
+
+	// etapa 3
+
+	min = _mm_min_ps(rb, rc);
+	max = _mm_max_ps(rb, rc);
+
+	rb = min;
+	rc = max;
+
+	_MM_TRANSPOSE4_PS(ra, rb, rc, rd);
+
+	*a = ra;
+	*b = rb;
+	*c = rc;
+	*d = rd;
 }

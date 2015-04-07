@@ -14,7 +14,7 @@
  *
  * @param reg Es el registro que se quiere ordenar
  */
-__m128 sort_m128(__m128 reg) __attribute__((const)); 
+__m128 sort_m128(__m128 reg);
 
 /**
  * Invierte un registro.
@@ -38,14 +38,5 @@ __m128 sort_m128(__m128 reg) __attribute__((const));
  */
 void bitonic_merge_network(__m128 *a, __m128 *b);
 
-/**
- * Segunda etapa de la red de ordenamiento bitonica. Esta etapa de la red se 
- * puede hacer aparte, pues los registros resultantes dependen unicamente del 
- * mismo registro de entrada, a diferencia de las etapas restantes que dependen 
- * de los resultados del segundo registro.
- *
- * @param reg	Registro __m128
- * @return El registro resultante de la segunda etapa de la BMN
- */
-static __m128 bmn_2ndstage(__m128 reg) __attribute__((const));
+void in_register_sort(__m128 *a, __m128 *b, __m128 *c, __m128 *d);
 #endif
