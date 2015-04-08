@@ -152,3 +152,41 @@ void in_register_sort(__m128 *a, __m128 *b, __m128 *c, __m128 *d)
 	*c = rc;
 	*d = rd;
 }
+
+void merge_SIMD(__m128 *a, __m128 *b, __m128 *c, __m128 *d)
+{
+	__m128 s1, s2, s3, s4;
+	s1 = *a;
+	s2 = *b;
+	s3 = *c;
+	s4 = *d;
+
+	s3 = _MM_INVERT_PS(s3);
+	bitonic_merge_network(&s1, &s3);
+
+	*a = s1;
+
+	// si s2[31:0] <= s4[31:0]
+	if (_mm_ucomile_ss(s2, s4))
+	{
+		s3 = _MM_INVERT_PS(s3);
+		bitonic_merge_network(&s2, &s3);
+		*b = s2;
+
+		s4 = _MM_INVERT_PS(s4);
+		bitonic_merge_network(&s3, &s4);
+		*c = s3;
+		*d = s4; 
+	}
+	else
+	{
+		s4 = _MM_INVERT_PS(s4);
+		bitonic_merge_network(&s3, &s4);
+		*b = s3; 
+
+		s4 = _MM_INVERT_PS(s4);
+		bitonic_merge_network(&s2, &s4);
+		*c = s2;
+		*d = s4; 
+	}
+}

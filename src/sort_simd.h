@@ -1,12 +1,12 @@
-#ifndef _SORT_SIMD_H
-#define _SORT_SIMD_H
+#ifndef __SORT_SIMD_H__
+#define __SORT_SIMD_H__
 
 #include <pmmintrin.h>
 #include <emmintrin.h>
 #include <mmintrin.h>
 #include <stdint.h>
 
-#define _MM_REVERSE_PS(reg) _mm_shuffle_ps(reg, reg, _MM_SHUFFLE(3,1,2,0))
+#define _MM_INVERT_PS(reg) _mm_shuffle_ps(reg, reg, _MM_SHUFFLE(0,1,2,3))
 
 /**
  * Ordena un registro __m128 de menor a mayor con una red simple de 
@@ -17,26 +17,39 @@
 __m128 sort_m128(__m128 reg);
 
 /**
- * Invierte un registro.
+ * Red de Batcher. Hace un mersort de una secuencia bitonica de 8 elementos 
+ * separados en 2 registros. El primer registro (a) tiene que estar ordenado 
+ * crecientemente y el segundo registro (b) tiene que estar ordenado 
+ * decrecientemente.
  *
- * [R0 R1 R2 R3] --> [R3 R2 R1 R0]
- *
- * @param reg	Registro que se quiere invertir
- *
- * @return El registro a invertir
- */
-//inline __m128 reverse_m128(__m128 reg) __attribute__((const));
-
-/**
- * Red de Batcher. Hace un mergesort entre de los registros 'a' y 'b' y los 
- * coloca en dest. 'dest' tiene que ser un arreglo de largo 2 de tipo «__m128».
- *
- * @param dest	Arreglo donde se colocan las 2 secuencias ordenadas de menor a 
- * mayor
- * @param a		Primer registro __m128
- * @param b		Segundo registro __m128
+ * @param a		Primer registro __m128 monotonicamente creciente
+ * @param b		Segundo registro __m128 monotonicamente decreciente
  */
 void bitonic_merge_network(__m128 *a, __m128 *b);
 
+/**
+ * Toma 4 registros desordenados y entrega 4 registros ordenados de menor a 
+ * mayor.
+ *
+ * @param a
+ * @param b
+ * @param c
+ * @param d
+ */
 void in_register_sort(__m128 *a, __m128 *b, __m128 *c, __m128 *d);
+
+
+/**
+ * Mezcla 2 secuencias de 8 elementos, monotonicamente crecientes, dejando una 
+ * secuencia de 16 elementos.  Toma 4 registros tales que «a» y «b» formen una 
+ * secuencia de 8 valores ordenados de menor a mayor, asi como tambien «c» y 
+ * «d». Al final mezcla las 2 secuencias (formadas por los registros de 
+ * entrada) dejando una sola de 16 elementos ordenados de menor a mayor.
+ *
+ * @param a
+ * @param b
+ * @param c
+ * @param d
+ */
+void merge_SIMD(__m128 *a, __m128 *b, __m128 *c, __m128 *d);
 #endif
