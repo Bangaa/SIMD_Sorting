@@ -1,3 +1,4 @@
+#include "main.h"
 #include "sort_simd.h"
 #include <pmmintrin.h>
 #include <emmintrin.h>
@@ -189,4 +190,74 @@ void merge_SIMD(__m128 *a, __m128 *b, __m128 *c, __m128 *d)
 		*c = s2;
 		*d = s4; 
 	}
+}
+
+void sort_SIMD(__m128 *r1, __m128 *r2, __m128 *r3, __m128 *r4)
+{
+	// in-register sorting
+	in_register_sort(r1, r2, r3, r4);
+
+	// generar 2 secuencias ordenadas de a 8
+	*r2 = _MM_INVERT_PS(*r2);
+	*r4 = _MM_INVERT_PS(*r4);
+	bitonic_merge_network(r1, r2);
+	bitonic_merge_network(r3, r4);
+
+	// generar secuencia de 16
+	merge_SIMD(r1, r2, r3, r4);
+}
+
+void mw_merge_sort(float *dst, float *src, size_t nelm)
+{
+	int *ind; //<! indice de cada una de las listas
+	size_t nlists = nelm / 16;
+	int idx_dst = 0;
+
+	ind = (int*) malloc(sizeof(int) * nlists);
+
+	if (ind == NULL)
+	{
+		print_err("Error: no se pudo reservar memoria");
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+		for (int i=0; i< nlists; i++)
+			ind[i] = 0;
+	}
+
+	int j=0;  //<! Numero de la lista
+	do
+	{ 
+		float min;
+		float cand;
+		int idx, idx_menor = j;
+		float *lst_act;
+
+
+		idx = ind[j];
+		lst_act = src + 16*j;
+		min = lst_act[idx];
+
+		for (int i=j+1; i < nlists; i++)
+		{
+			idx = ind[i];
+			if (idx > 15) continue;
+
+			lst_act = src + 16*i;
+			cand = lst_act[idx];
+
+			if (cand < min)
+			{
+				min = cand;
+				idx_menor = i;	//<! numero de la lista donde se encontro al menor
+			}
+		}
+		dst[idx_dst++] = min;
+		ind[idx_menor] = ind[idx_menor] + 1;
+
+		while (ind[j] > 15)
+			j++;
+
+	}while(j < nlists);
 }

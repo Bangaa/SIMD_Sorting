@@ -11,10 +11,12 @@
 /**
  * Ordena un registro __m128 de menor a mayor con una red simple de 
  * ordenamiento.
+ * Esta funcion no se hace uso en el programa pues hay una mejor forma de 
+ * ordenar registros.
  *
  * @param reg Es el registro que se quiere ordenar
  */
-__m128 sort_m128(__m128 reg);
+__m128 sort_m128(__m128 reg) __attribute__((deprecated));
 
 /**
  * Red de Batcher. Hace un mersort de una secuencia bitonica de 8 elementos 
@@ -52,4 +54,17 @@ void in_register_sort(__m128 *a, __m128 *b, __m128 *c, __m128 *d);
  * @param d
  */
 void merge_SIMD(__m128 *a, __m128 *b, __m128 *c, __m128 *d);
+
+/**
+ * Ordena 4 registros __m128, representando 16 valores, de menor a mayor. El 
+ * resultado se guarda en los mismos registros de entrada.
+ *
+ * @param r1
+ * @param r2
+ * @param r3
+ * @param r4
+ */
+void sort_SIMD(__m128 *r1, __m128 *r2, __m128 *r3, __m128 *r4);
+
+void mw_merge_sort(float *dst, float *src, size_t nelm);
 #endif
