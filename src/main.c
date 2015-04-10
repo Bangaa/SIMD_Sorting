@@ -1,37 +1,81 @@
+#include <getopt.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include "main.h"
 #include "sort_simd.h"
 
+const char usage[] =
+			"opciones ...\n"
+			"\n"
+			"opciones:\n"
+			"  -i <entrada>\n"
+			"     Archivo binario con la lista de entrada desordenados\n"
+			"  -o <salida>\n"
+			"     Archivo binario de salida con la lista ordenada\n"
+			"  -N <largo>\n"
+			"     Largo de la lista. No es obligatorio ya que el programa lo deduce segun el tamagno del\n"
+			"     archivo de entrada\n"
+			"  -d <debug_level>\n"
+			"     Cuando es 0 no se imprime nada por stdout. Cuando el valor es 1 se imprime la secuencia\n"
+			"     final por stdout, un elemento por línea\n";
+
 int main(int argc, char* argv[])
 {
-	if (argc < 2)
+	int opt;
+	char finpname[100] = "";
+	char foupname[100] = "";
+	int debug = 0;
+	unsigned int numelem = 0;	//<! largo de la lista a ordenar
+
+	if (argc == 1)
 	{
-		print_err("Error: Falta el nombre del archivo\n");
+		printf("uso: %s %s", argv[0], usage);
 		exit(EXIT_FAILURE);
 	}
+
+	while ((opt = getopt(argc, argv, ":i:o:N:d:")) != -1)
+	{
+		switch (opt)
+		{
+			case 'i':
+				sscanf(optarg, "%s", finpname);
+				break;
+			case 'o':
+				sscanf(optarg, "%s", foupname);
+				break;
+			case 'N':
+				sscanf(optarg, "%u", &numelem);
+				break;
+			case 'd':
+				sscanf(optarg, "%i", &debug);
+				break; 
+		}
+	} 
 
 	float *data __attribute__((aligned(16)));
 	float *stdata;
 	__m128 *regs;
 
 	// se abre y "pesa" el archivo
-	FILE* input_file;
-	input_file = fopen(argv[1], "r");
+	FILE *file_in, *file_out;
+	file_in = fopen(finpname, "r");
 
-	if (input_file == NULL)
+	if (file_in == NULL)
 	{
-		print_err("Error: no existe el archivo de entrada «%s»", argv[1]);
+		print_err("Error: no existe el archivo de entrada «%s»", finpname);
+		exit(EXIT_FAILURE);
 	}
 
-	size_t sof = fsof(input_file);
-	size_t n_elem = sof/4;
-	size_t n_reg = n_elem/4;
+	size_t sof = fsof(file_in);
+	if (numelem == 0) 
+		numelem = sof / 4;
+
+	size_t numreg = numelem/4;
 
 	// se reserva memoria segun tamagno del archivo
 
-	data = (float*) malloc(n_elem * sizeof(float));
-	regs = (__m128*) malloc(n_reg * sizeof(__m128));
+	data = (float*) malloc(numelem * sizeof(float));
+	regs = (__m128*) malloc(numreg * sizeof(__m128));
 
 	if (data== NULL || regs == NULL)
 	{
@@ -39,45 +83,35 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	size_t leidos = fread(data, sizeof(float), n_elem, input_file);
+	size_t leidos __attribute__((unused)) = fread(data, sizeof(float), numelem, file_in);
+	fclose(file_in); 
 
-	fclose(input_file);
-
-	printf("leidos: %lu\n", leidos); 
-
-	cargar_registros(data, regs, n_elem);
-
-	ordenar_registros(regs, n_reg);
-
-	guardar_registros(data, regs, n_reg);
+	cargar_registros(data, regs, numelem);
+	ordenar_registros(regs, numreg);
+	guardar_registros(data, regs, numreg);
 
 	free(regs);
-	stdata = (float*) malloc(n_elem * sizeof(float));
+	stdata = (float*) malloc(numelem * sizeof(float));
 
 	printf("Haciendo el MWMS\n");
 	
-	mw_merge_sort(stdata, data, n_elem);
+	mw_merge_sort(stdata, data, numelem);
 
-	char fname[100];
-	FILE *salida;
+	// SE ESCRIBE EL ARREGLO ORDENADO EN EL ARCHIVO DE SALIDA
 
-	sprintf(fname, "%s.sorted.raw", argv[1]);
-	salida = fopen(fname, "w"); 
+	file_out = fopen(foupname, "w"); 
 
-	fwrite(stdata, sizeof(float), n_elem, salida);
+	fwrite(stdata, sizeof(float), numelem, file_out);
 
-	fclose(salida);
+	if (debug == 1)
+		for (int i=0; i< numelem; i++)
+		{
+			printf("%f\n", stdata[i]);
+		}
+
+	fclose(file_out);
 	free(data);
-	free(stdata);
-
-	/*
-	for (int i=0; i< n_elem; i++)
-	{
-		for (int j=0; j< 16; j++)
-			printf("%f ", stdata[i]);
-		printf("\n");
-	}
-	*/
+	free(stdata); 
 
 	return 0; 
 }
