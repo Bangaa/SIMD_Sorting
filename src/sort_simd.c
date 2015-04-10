@@ -261,3 +261,68 @@ void mw_merge_sort(float *dst, float *src, size_t nelm)
 
 	}while(j < nlists);
 }
+
+void mw_merge_sortv2(float *array, size_t nelm)
+{
+	merge_sort(array, 0, nelm - 1);
+}
+
+void merge_sort(float *array, int inicio, int fin)
+{
+	int medio = (inicio + fin) >> 1;
+
+	if ((fin - inicio) > 16)
+	{ 
+		merge_sort(array, inicio, medio);
+		merge_sort(array, medio +1, fin);
+		combinar(array, inicio, medio, fin);
+	}
+}
+
+void combinar(float *array, int inicio, int medio, int fin)
+{
+    float *aux = (float*) calloc(fin-inicio+1, sizeof(float));
+	int indAux, indFst, indSnd;
+	int i; 
+	indAux = 0;         //<! indice del arreglo auxiliar
+	indFst = inicio;    //<! indice de la primera mitad
+	indSnd = medio+1;   //<! indice de la segunda mitad
+	
+	while (indFst <= medio && indSnd <= fin)
+	{
+		//  cambiar <= por >= si se quiere ordenar de mayor a menor
+		if (array[indFst] <= array[indSnd])
+		{
+			aux[indAux++] = array[indFst++];
+		}
+		else
+		{
+			aux[indAux++] = array[indSnd++];
+		}
+	}
+
+	// Se copian los elementos de la primera mitad no comparados
+
+	while (indFst<=medio)
+	{
+		aux[indAux++] = array[indFst++];
+	}
+
+	// Se copian los elementos de la segunda mitad no comparados
+
+	while (indSnd <= fin)
+	{
+		aux[indAux++] = array[indSnd++];
+	}
+
+	indAux = 0;
+
+	/* Finalmente se copian los elementos del array auxiliar (ordenados)
+	   en el array original */
+
+	for (i = inicio; i <= fin; i++)
+	{
+		array[i] = aux[indAux++];
+	}
+	free(aux);
+}

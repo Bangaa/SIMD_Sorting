@@ -53,7 +53,6 @@ int main(int argc, char* argv[])
 	} 
 
 	float *data __attribute__((aligned(16)));
-	float *stdata;
 	__m128 *regs;
 
 	// se abre y "pesa" el archivo
@@ -91,27 +90,25 @@ int main(int argc, char* argv[])
 	guardar_registros(data, regs, numreg);
 
 	free(regs);
-	stdata = (float*) malloc(numelem * sizeof(float));
 
 	printf("Haciendo el MWMS\n");
 	
-	mw_merge_sort(stdata, data, numelem);
+	mw_merge_sortv2(data, numelem);
 
 	// SE ESCRIBE EL ARREGLO ORDENADO EN EL ARCHIVO DE SALIDA
 
 	file_out = fopen(foupname, "w"); 
 
-	fwrite(stdata, sizeof(float), numelem, file_out);
+	fwrite(data, sizeof(float), numelem, file_out);
 
 	if (debug == 1)
 		for (int i=0; i< numelem; i++)
 		{
-			printf("%f\n", stdata[i]);
+			printf("%f\n", data[i]);
 		}
 
 	fclose(file_out);
 	free(data);
-	free(stdata); 
 
 	return 0; 
 }
