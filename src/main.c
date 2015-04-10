@@ -5,19 +5,19 @@
 #include "sort_simd.h"
 
 const char usage[] =
-			"opciones ...\n"
-			"\n"
-			"opciones:\n"
-			"  -i <entrada>\n"
-			"     Archivo binario con la lista de entrada desordenados\n"
-			"  -o <salida>\n"
-			"     Archivo binario de salida con la lista ordenada\n"
-			"  -N <largo>\n"
-			"     Largo de la lista. No es obligatorio ya que el programa lo deduce segun el tamagno del\n"
-			"     archivo de entrada\n"
-			"  -d <debug_level>\n"
-			"     Cuando es 0 no se imprime nada por stdout. Cuando el valor es 1 se imprime la secuencia\n"
-			"     final por stdout, un elemento por línea\n";
+	"opciones ...\n"
+	"\n"
+	"opciones:\n"
+	"  -i <entrada>\n"
+	"     Archivo binario con la lista de entrada desordenados\n"
+	"  -o <salida>\n"
+	"     Archivo binario de salida con la lista ordenada\n"
+	"  -N <largo>\n"
+	"     Largo de la lista. No es obligatorio ya que el programa lo deduce segun el tamagno del\n"
+	"     archivo de entrada\n"
+	"  -d <debug_level>\n"
+	"     Cuando es 0 no se imprime nada por stdout. Cuando el valor es 1 se imprime la secuencia\n"
+	"     final por stdout, un elemento por línea\n";
 
 int main(int argc, char* argv[])
 {
@@ -33,6 +33,7 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	// PARSEO DE LOS ARGUMENTOS
 	while ((opt = getopt(argc, argv, ":i:o:N:d:")) != -1)
 	{
 		switch (opt)
@@ -55,7 +56,7 @@ int main(int argc, char* argv[])
 	float *data __attribute__((aligned(16)));
 	__m128 *regs;
 
-	// se abre y "pesa" el archivo
+	// SE ABRE Y "PESA" EL ARCHIVO
 	FILE *file_in, *file_out;
 	file_in = fopen(finpname, "r");
 
@@ -65,13 +66,13 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	size_t sof = fsof(file_in);
+	size_t sof = fsof(file_in);	//<! tamagno del archivo en bytes
 	if (numelem == 0) 
 		numelem = sof / 4;
 
 	size_t numreg = numelem/4;
 
-	// se reserva memoria segun tamagno del archivo
+	// SE RESERVA MEMORIA SEGUN TAMAGNO DEL ARCHIVO
 
 	data = (float*) malloc(numelem * sizeof(float));
 	regs = (__m128*) malloc(numreg * sizeof(__m128));
@@ -91,8 +92,6 @@ int main(int argc, char* argv[])
 
 	free(regs);
 
-	printf("Haciendo el MWMS\n");
-	
 	mw_merge_sortv2(data, numelem);
 
 	// SE ESCRIBE EL ARREGLO ORDENADO EN EL ARCHIVO DE SALIDA
