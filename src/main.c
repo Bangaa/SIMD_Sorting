@@ -5,19 +5,19 @@
 #include "sort_simd.h"
 
 const char usage[] =
-	"opciones ...\n"
+	"-i entrada -o salida [-d debug_level] [-N largo]\n"
 	"\n"
 	"opciones:\n"
-	"  -i <entrada>\n"
-	"     Archivo binario con la lista de entrada desordenados\n"
-	"  -o <salida>\n"
-	"     Archivo binario de salida con la lista ordenada\n"
-	"  -N <largo>\n"
-	"     Largo de la lista. No es obligatorio ya que el programa lo deduce segun el tamagno del\n"
-	"     archivo de entrada\n"
-	"  -d <debug_level>\n"
-	"     Cuando es 0 no se imprime nada por stdout. Cuando el valor es 1 se imprime la secuencia\n"
-	"     final por stdout, un elemento por línea\n";
+	"  -i entrada\n"
+	"       Nombre del archivo binario con la lista de entrada desordenados\n"
+	"  -o salida\n"
+	"       Nombre del archivo binario de salida con la lista ordenada\n"
+	"  -N largo\n"
+	"       Largo de la lista. No es obligatorio ya que el programa lo deduce\n"
+	"       segun el tamagno del archivo de entrada\n"
+	"  -d debug_level\n"
+	"       Cuando es 0 no se imprime nada por stdout. Cuando el valor es 1 se\n"
+	"       imprime la secuencia final por stdout, un elemento por línea\n";
 
 int main(int argc, char* argv[])
 {
